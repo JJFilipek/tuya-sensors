@@ -1,52 +1,58 @@
-from flask import Flask, jsonify
-import json
+from flask import Flask, jsonify, request
 import tinytuya
-import os
-
-# Ustawienia API z użyciem zmiennych środowiskowych
-api_region = os.environ.get('API_REGION')
-api_key = os.environ.get('API_KEY')
-api_secret = os.environ.get('API_SECRET')
-
-# Dane urządzeń w formacie JSON (wstawione bezpośrednio w kod lub zdefiniowane jako zmienna środowiskowa)
-devices = json.loads(os.environ.get('DEVICES_JSON'))
 
 app = Flask(__name__)
 
 # Funkcja do pobrania stanu urządzenia
-def get_device_status(current_device):
+def get_device_status(device_id, api_region, api_key, api_secret):
     cloud = tinytuya.Cloud(
         apiRegion=api_region,
         apiKey=api_key,
         apiSecret=api_secret,
-        apiDeviceID=current_device['id']
+        apiDeviceID=device_id
     )
-    return cloud.getstatus(current_device['id'])
+    return cloud.getstatus(device_id)
 
-# Endpoint zwracający status wszystkich urządzeń
+# Endpoint zwracający status wszystkich urządzeń podanych w parametrach
 @app.route('/devices', methods=['GET'])
-def get_all_devices():
+def get_multiple_devices():
+    # Pobierz dane API z nagłówków żądania
+    api_region = request.headers.get('API-Region')
+    api_key = request.headers.get('API-Key')
+    api_secret = request.headers.get('API-Secret')
+    
+    # Pobierz listę identyfikatorów urządzeń z parametru żądania
+    device_ids = request.args.getlist('device_id')
+    
+    # Sprawdź, czy wszystkie wymagane dane zostały dostarczone
+    if not all([api_region, api_key, api_secret, device_ids]):
+        return jsonify({"error": "Missing API credentials or device IDs"}), 400
+
+    # Pobierz status dla każdego urządzenia
     all_statuses = []
-    for device in devices:
-        status = get_device_status(device)
+    for device_id in device_ids:
+        status = get_device_status(device_id, api_region, api_key, api_secret)
         all_statuses.append({
-            "name": device["name"],
-            "id": device["id"],
+            "id": device_id,
             "status": status
         })
     return jsonify(all_statuses)
 
-# Endpoint zwracający status konkretnego urządzenia na podstawie ID
+# Endpoint zwracający status pojedynczego urządzenia na podstawie ID
 @app.route('/device/<device_id>', methods=['GET'])
 def get_single_device(device_id):
-    device = next((d for d in devices if d['id'] == device_id), None)
-    if not device:
-        return jsonify({"error": "Device not found"}), 404
+    api_region = request.headers.get('API-Region')
+    api_key = request.headers.get('API-Key')
+    api_secret = request.headers.get('API-Secret')
     
-    status = get_device_status(device)
+    # Sprawdź, czy wszystkie wymagane dane zostały dostarczone
+    if not all([api_region, api_key, api_secret]):
+        return jsonify({"error": "Missing API credentials"}), 400
+
+    # Pobierz status dla urządzenia
+    status = get_device_status(device_id, api_region, api_key, api_secret)
     return jsonify({
-        "name": device["name"],
-        "id": device["id"],
+        "id": device_id,
         "status": status
     })
 
