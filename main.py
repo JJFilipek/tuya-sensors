@@ -1,16 +1,15 @@
 from flask import Flask, jsonify
 import json
 import tinytuya
+import os
 
-# Wczytanie danych z pliku config.json
-with open('config.json', 'r') as f:
-    config = json.load(f)
+# Ustawienia API z użyciem zmiennych środowiskowych
+api_region = os.environ.get('API_REGION')
+api_key = os.environ.get('API_KEY')
+api_secret = os.environ.get('API_SECRET')
 
-# Ustawienia API
-api_region = config['api_region']
-api_key = config['api_key']
-api_secret = config['api_secret']
-devices = config['devices']
+# Dane urządzeń w formacie JSON (wstawione bezpośrednio w kod lub zdefiniowane jako zmienna środowiskowa)
+devices = json.loads(os.environ.get('DEVICES_JSON'))
 
 app = Flask(__name__)
 
