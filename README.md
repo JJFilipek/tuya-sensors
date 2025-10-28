@@ -3,12 +3,14 @@
 A lightweight Flask application that exposes a REST API for querying Tuya-powered sensors through the [TinyTuya](https://github.com/jasonacox/tinytuya) cloud library. Use it to request live status information or detailed metadata for your devices registered in the Tuya IoT Cloud.
 
 ## Features
+
 - Connects to the Tuya Cloud using TinyTuya credentials.
 - Fetch the real-time status of one or many devices in a single request.
 - Retrieve descriptive metadata (model, name, product category, etc.) for any registered device.
 - Consistent JSON responses and informative logging for easier integration and debugging.
 
 ## Prerequisites
+
 - Python 3.10+
 - A Tuya IoT Cloud project with API access enabled
 - The following credentials generated in the Tuya Cloud Console:
@@ -17,6 +19,7 @@ A lightweight Flask application that exposes a REST API for querying Tuya-powere
   - **API Secret**
 
 ## Installation
+
 1. Clone this repository and move into the project directory:
    ```bash
    git clone https://github.com/<your-account>/tuya-sensors.git
@@ -33,17 +36,20 @@ A lightweight Flask application that exposes a REST API for querying Tuya-powere
    ```
 
 ## Configuration
+
 The API reads the port from the optional `PORT` environment variable (defaults to `5000`).
 
 The Tuya Cloud credentials are supplied per request through HTTP headers so you do not need to store them on the server.
 
 ## Running the Server
+
 ```bash
 python main.py
 ```
 The server listens on `0.0.0.0` (all interfaces) and uses the port defined above.
 
 ## API Usage
+
 All endpoints expect the following HTTP headers to authenticate with the Tuya Cloud:
 
 ```
@@ -132,11 +138,14 @@ curl \
 If a device cannot be found or the credentials are invalid, the API returns a descriptive JSON error with an appropriate HTTP status code.
 
 ## Logging
+
 The application enables INFO level logging by default, which helps trace device lookups and potential issues. Adjust the `logging.basicConfig` configuration in `main.py` if you need a different verbosity.
 
 ## Development Notes
+
 - The Flask development server is enabled with `debug=True`. Avoid using it directly in production—run the app behind a production-grade WSGI server (e.g. Gunicorn or uWSGI).
 - TinyTuya communicates with the Tuya cloud; ensure the host machine has outbound internet access.
 
 ## License
+
 This project is distributed under the terms of the [MIT License](LICENSE).
